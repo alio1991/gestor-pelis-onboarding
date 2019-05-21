@@ -52,12 +52,14 @@
         margin: var(--icon-margin);
         height: var(--icon-size);
         width: var(--icon-size);
+        cursor: pointer;
       }
       .lessThanTenMovies {
         visibility: hidden;
         margin: var(--icon-margin);
         height: var(--icon-size);
         width: var(--icon-size);
+        cursor: pointer;
       }
       .carousel{
         width: 100%;
@@ -68,6 +70,7 @@
           height: 100px;
           width: 100px;
           margin: 53.600px 5px 53.600px;
+          cursor: pointer;
       }
 
       .header{
@@ -85,11 +88,12 @@
         display:flex;
         flex-direction: row;
         margin: 54px 0px 10px;
+        cursor: pointer;
       }
       
     </style>
     <div class="header">
-      <img class="main-image" src="./images/movies.jpg" on-click="_showFavs">
+      <img class="main-image" alt="Inicio/Favoritos" src="./images/movies.jpg" on-click="_showFavs">
       <div class="selection">
         <h1 class="contentSelected" on-click="_changeContent">[[kind.name]]</h1>
         <h1 class="contentNotSelected" on-click="_changeContent">[[typeNotSelected]]</h1>

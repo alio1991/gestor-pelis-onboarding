@@ -22,8 +22,31 @@
         border-radius: 5%;
       }
       .card:hover {
-        border: 5px solid green;
+        /* border: 5px solid green; */
+        cursor: pointer;
       }
+
+      .card:hover > .upperCard {
+        background-color: rgba(128, 120, 120, 0.178);
+      }
+
+      .card:hover > img {
+        display:none;
+      }
+      .card:hover > .isFav {
+        display:none;
+      }
+      .card:hover > .upperCard {
+        display:flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        
+      }
+      .cardHeader{
+        height: 36px;
+      }
+
       .isFav{
         height: 50px;
         width: 100%;
@@ -37,45 +60,40 @@
         border-top-left-radius: 5%;
         border-top-right-radius: 5%;
       }
-
-      @keyframes hvr-buzz {
-        50% {
-          -webkit-transform: translateX(3px) rotate(2deg);
-          transform: translateX(3px) rotate(2deg);
-        }
-        100% {
-          -webkit-transform: translateX(-3px) rotate(-2deg);
-          transform: translateX(-3px) rotate(-2deg);
-      }
-      }
-      .hvr-buzz {
-        vertical-align: middle;
-        -webkit-transform: perspective(1px) translateZ(0);
-        transform: perspective(1px) translateZ(0);
-      }
-      .hvr-buzz:hover, .hvr-buzz:focus, .hvr-buzz:active {
-        -webkit-animation-name: hvr-buzz;
-        animation-name: hvr-buzz;
-        -webkit-animation-duration: 0.08s;
-        animation-duration: 0.08s;
-        -webkit-animation-timing-function: linear;
-        animation-timing-function: linear;
-        -webkit-animation-iteration-count: 5;
-        animation-iteration-count: 5;
+      img:hover{
+        filter: blur(3px);
       }
       .isFav{
         font-size: 30px;
+        color: red;
       }
       .id{
         display:none;
       }
+      .upperCard{
+        width: 300px;
+        height: 500px;
+        background-color: grey;
+        display: none;
+        border-radius: 5%;
+      }
+
+      .heart{
+        font-size: 60px;
+      }
+      .movieIcon{
+        font-size: 60px;
+        color:red;
+      }
     </style>
 
-    <li class="card hvr-buzz" on-click="_setFav">
-      <span class="isFav">[[fav]]</span>
+    <li class="card hvr-buzz" >
+      <p class="cardHeader">[[data.Title]] - [[data.Year]] </p>
       <img src="[[data.Poster]]" onerror="this.onerror=null;this.src='./images/noImage.jpg';">
-      <p>[[data.Title]] - [[data.Year]] </p>
-      
+      <span class="isFav">[[fav]]</span>
+      <span class="upperCard" >
+        <span class="heart" on-click="_setFav">[[favAdvise]]</span><span class="movieIcon" on-click="redirection">&#x1F3AC; </span>
+      </span>
     </li>
   </template>
 
@@ -93,7 +111,8 @@
             observer: '_lookAtFav'
           },
           favs: Array,
-          fav: String
+          fav: String,
+          favAdvise: String
         }
       }
 
@@ -103,11 +122,13 @@
       }
 
       _lookAtFav(){
-        this.fav = this.favs.find( movie => movie.imdbID == this.data.imdbID) ? "♡" : "";
+        this.fav = this.favs.find( movie => movie.imdbID == this.data.imdbID) ? "🧡" : "";
+        this.favAdvise = this.fav == "" ? "🖤" : "🧡";
       }
 
       _setFav(){
-        this.fav = this.fav=="" ? "♡" : "";
+        this.fav = this.fav=="" ? "🧡" : "";
+        this.favAdvise = this.fav == "" ? "🖤" : "🧡";
         this._sendSelection();
       }
 
@@ -125,6 +146,21 @@
         this.dispatchEvent(event);   
       }
 
+      redirection(){
+        console.log("Click!!!");
+        let url = "https://www.google.es/search?q="
+        url = url+this.data.Title;
+        url = url+"&oq=";
+        url = url+this.data.Title;
+        this.openURL(url);
+      }
+
+      openURL(url) {
+        var link = document.createElement("a");
+        link.target = "_blank";
+        link.href = url;
+        link.click();
+	    }
     }
     
 
