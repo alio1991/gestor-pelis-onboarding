@@ -1,0 +1,108 @@
+<link rel="import" href="./node_modules/@polymer/polymer/polymer-element.html">
+<dom-module id="input-search">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        padding: 5px;
+        --min-size: 48px;
+        align-items: center;
+        --border-color: rgb(151, 25, 25);
+        --button-color: rgb(132, 214, 132);
+      }
+
+      button:enabled{
+        background-color: var(--button-color);
+      }
+      button:disabled{
+        background-color: grey;
+      }
+      input {
+        flex-grow: 1;
+        height: var(--min-size);
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 5px;
+        text-align: center;
+        margin-left: 50px;
+      }
+      button,input:focus{
+        outline: none;
+      }
+      button {
+        margin-left: 1rem;
+        height: var(--min-size);
+        min-width: var(--min-size);
+        border-radius: 15px;
+      }
+      .search-icon{
+        height: 50px;
+        width: 50px;
+      }
+
+    </style>
+
+    <input type="text" value="[[value]]" placeholder="[[placeholder]]" pattern="[[regExp]]">
+    <!-- <button on-click="sendValue">[[buttonTitle]]</button> -->
+    <img class="search-icon" on-click="sendValue" src="./images/search.jpg">
+  </template>
+
+  <script>
+
+    class InputSearch extends Polymer.Element {
+
+      static get is() {
+        return 'input-search';
+      }
+
+      static get properties() {
+        return {
+          value: String,
+          buttonTitle: String,
+          placeholder: String,
+          regExp: String
+        };
+      }
+
+      ready() {
+        super.ready();
+        let inputEl = this.shadowRoot.querySelector('input');
+        inputEl.addEventListener('keyup', this.validateInputValue.bind(this));
+        var input = document.getElementById("myInput");
+        this.shadowRoot.addEventListener("keyup", this.checkEnter.bind(this));
+      }
+
+      validateInputValue(event) {
+        let inputValue = event.currentTarget.value;
+        let patternValidated = event.currentTarget.validity.valid;
+        this.toggleButton(inputValue&&patternValidated ? true : false);
+      }
+
+      toggleButton(status) {
+        let buttonEl = this.shadowRoot.querySelector('.search-icon');
+        buttonEl.disabled = !status;
+      }
+
+      sendValue() {
+        let inputValue = this.shadowRoot.querySelector('input').value;
+        let event = new CustomEvent('button-clicked', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            value: inputValue
+          }
+        });
+        this.dispatchEvent(event);
+      }
+
+      checkEnter(event){
+        if (event.keyCode === 13) {
+            this.shadowRoot.querySelector('.search-icon').click();
+          }
+      }
+
+    }
+    
+    window.customElements.define(InputSearch.is, InputSearch);
+  </script>
+</dom-module>

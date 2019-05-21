@@ -1,0 +1,133 @@
+<link rel="import" href="./node_modules/@polymer/polymer/polymer-element.html">
+<dom-module id="movie-card">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 5px;
+        --border-color: rgb(151, 25, 25);
+        --width-card: 300px;
+        --height-card: 500px;
+      }
+
+      .card {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        border: 2px solid var(--border-color);
+        width: var(--width-card);
+        padding: 3px;
+        height: var(--height-card);
+        background-color: white;
+        border-radius: 5%;
+      }
+      .card:hover {
+        border: 5px solid green;
+      }
+      .isFav{
+        height: 50px;
+        width: 100%;
+      }
+
+      img {
+        margin-top: 5px;
+        max-height: 380px;
+        min-height: 380px;
+        width: var(--width-card);
+        border-top-left-radius: 5%;
+        border-top-right-radius: 5%;
+      }
+
+      @keyframes hvr-buzz {
+        50% {
+          -webkit-transform: translateX(3px) rotate(2deg);
+          transform: translateX(3px) rotate(2deg);
+        }
+        100% {
+          -webkit-transform: translateX(-3px) rotate(-2deg);
+          transform: translateX(-3px) rotate(-2deg);
+      }
+      }
+      .hvr-buzz {
+        vertical-align: middle;
+        -webkit-transform: perspective(1px) translateZ(0);
+        transform: perspective(1px) translateZ(0);
+      }
+      .hvr-buzz:hover, .hvr-buzz:focus, .hvr-buzz:active {
+        -webkit-animation-name: hvr-buzz;
+        animation-name: hvr-buzz;
+        -webkit-animation-duration: 0.08s;
+        animation-duration: 0.08s;
+        -webkit-animation-timing-function: linear;
+        animation-timing-function: linear;
+        -webkit-animation-iteration-count: 5;
+        animation-iteration-count: 5;
+      }
+      .isFav{
+        font-size: 30px;
+      }
+      .id{
+        display:none;
+      }
+    </style>
+
+    <li class="card hvr-buzz" on-click="_setFav">
+      <span class="isFav">[[fav]]</span>
+      <img src="[[data.Poster]]" onerror="this.onerror=null;this.src='./images/noImage.jpg';">
+      <p>[[data.Title]] - [[data.Year]] </p>
+      
+    </li>
+  </template>
+
+  <script>
+
+    class MovieCard extends Polymer.Element {
+
+      static get is() {
+        return 'movie-card';
+      }
+      static get properties() {
+        return {
+          data: {
+            type: Boolean,
+            observer: '_lookAtFav'
+          },
+          favs: Array,
+          fav: String
+        }
+      }
+
+      ready(){
+        super.ready();
+        this.favs = JSON.parse(localStorage.getItem('favFilms'));
+      }
+
+      _lookAtFav(){
+        this.fav = this.favs.find( movie => movie.imdbID == this.data.imdbID) ? "♡" : "";
+      }
+
+      _setFav(){
+        this.fav = this.fav=="" ? "♡" : "";
+        this._sendSelection();
+      }
+
+      _sendSelection(e){
+        let event = new CustomEvent('card-selected', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            imdbID: this.data.imdbID,
+            Title: this.data.Title,
+            Poster: this.data.Poster,
+            Year: this.data.Year
+          }
+        });
+        this.dispatchEvent(event);   
+      }
+
+    }
+    
+
+    window.customElements.define(MovieCard.is, MovieCard);
+  </script>
+</dom-module>

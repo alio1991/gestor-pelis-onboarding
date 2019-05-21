@@ -1,0 +1,24 @@
+{
+  "name": "polymer-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server -o"
+  },
+  "keywords": [
+    "polymer"
+  ],
+  "author": "edu",
+  "license": "ISC",
+  "dependencies": {
+    "@polymer/iron-ajax": "^3.0.1",
+    "@polymer/iron-list": "^3.0.2",
+    "@polymer/polymer": "^2.6.0",
+    "material-design-icons": "^3.0.1"
+  },
+  "devDependencies": {
+    "http-server": "^0.11.1"
+  }
+}

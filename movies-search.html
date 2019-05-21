@@ -1,0 +1,223 @@
+<link rel="import" href="./node_modules/@polymer/polymer/polymer-element.html">
+<link rel="import" href="https://cdn.rawgit.com/Download/polymer-cdn/master/lib/iron-ajax/iron-ajax.html" />
+<link rel="import" href="./node_modules/@polymer/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="input-search.html">
+<link rel="import" href="movie-card.html">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<dom-module id="movies-search">
+  <template>
+    <style>
+      :host {
+        display: block;
+        padding: 5px;
+        --border-color: rgb(151, 25, 25);
+        --icon-size: 50px;
+        --icon-margin: 10px 60px 0;
+      }
+
+      .greeting {
+        color: red;
+      }
+
+      h1 {
+        text-align: center;
+        margin-right: 68px;
+        color: white;
+        font-size: 80px;
+        text-shadow: 2px 2px var(--border-color);
+        margin:0px;
+      }
+
+      .card-grid {
+        padding: 0px;
+        width: 100%;
+        margin-right: 48px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 320px));
+        grid-gap: 10px;
+        justify-content: center;
+        margin-left: 2px;
+      }
+
+      .movieNotFound {
+        display: none;
+        color: white;
+        font-size: 45px;
+        text-align: center;
+        text-shadow: 2px 2px var(--border-color);
+      }
+
+      .moreThanTenMovies {
+        visibility: hidden;
+        margin: var(--icon-margin);
+        height: var(--icon-size);
+        width: var(--icon-size);
+      }
+      .lessThanTenMovies {
+        visibility: hidden;
+        margin: var(--icon-margin);
+        height: var(--icon-size);
+        width: var(--icon-size);
+      }
+      .carousel{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+      .main-image{
+          height: 100px;
+          width: 100px;
+          margin: 53.600px 5px 53.600px;
+      }
+
+      .header{
+        display: flex;
+        justify-content: center;
+      }
+
+      .contentNotSelected{
+        font-size: 50px;
+        filter: blur(2px);
+        /* margin: 73.600px 1px 53.600px; */
+        margin:0px;
+      }
+      .selection{
+        display:flex;
+        flex-direction: row;
+        margin: 54px 0px 10px;
+      }
+      
+    </style>
+    <div class="header">
+      <img class="main-image" src="./images/movies.jpg" on-click="_showFavs">
+      <div class="selection">
+        <h1 class="contentSelected" on-click="_changeContent">[[kind.name]]</h1>
+        <h1 class="contentNotSelected" on-click="_changeContent">[[typeNotSelected]]</h1>
+      </div>
+    </div>
+    <input-search reg-exp="^[\S]{1}[\S ]{2}[\S ]*" placeholder="Escribe la pelicula que quieres buscar"
+      value="spider man" button-title="Buscar"></input-search>
+    <p class="movieNotFound">[[kind.name]] no encontradas</p>
+
+    <iron-ajax url="https://www.omdbapi.com/?s=[[content]]&plot=full&apikey=e477ed6a&page=[[page]]&type=[[kind.type]]" handle-as="json"></iron-ajax>
+    <div class="carousel">
+        <img on-click="_changePage" class="lessThanTenMovies" src="./images/pre-page.png">
+        <img on-click="_changePage" class="moreThanTenMovies" src="./images/next-page.png">
+      </div>
+    <ul class="card-grid">
+      <template is="dom-repeat" items="[[moviesFound]]">
+        <movie-card favs="[[favMovies]]" data="[[item]]"></movie-card>
+      </template>
+    </ul>
+    
+  </template>
+  <script>
+
+    class MoviesSearch extends Polymer.Element {
+
+      static get is() {
+        return 'movies-search';
+      }
+
+      static get properties() {
+        return {
+          content: String,
+          moviesFound: Array,
+          page: Number,
+          kind:Array,
+          favMovies: Array,
+          typeNotSelected: String
+        }
+      }
+
+      ready() {
+        super.ready();
+        this._inicializeFavs();
+        this._inicializeProperties();
+        let inputEv = this.shadowRoot.querySelector('input-search');
+        inputEv.addEventListener('button-clicked', (event) => {
+          event.preventDefault();
+          this._setSearchValues(event);
+          this._ajaxCall();
+        });
+        this.addEventListener('card-selected', (event) => {
+            this._manageFavs(event.detail);
+        });
+        this._showFavs();
+      }
+
+      _inicializeProperties(){
+        this.page=1;
+        this.kind={"type":"movie","name":"Películas"}
+        this.typeNotSelected= "Series";
+      }
+      _setSearchValues(event) {
+        this.page=1;
+        let value = event.detail.value;
+        this.content = value;
+      }
+
+      _ajaxCall() {
+        let ajaxResponse = this.shadowRoot.querySelector('iron-ajax');
+        ajaxResponse.generateRequest().completes.then((response) => {
+          this.moviesFound = this._checkValidation(response.response.Search) ? this._replaceBadValues(response.response.Search): [];
+        });
+      }
+
+      _checkValidation(content) {
+        let moviesMsg = this.shadowRoot.querySelector('.movieNotFound');
+        let nextButton = this.shadowRoot.querySelector('.moreThanTenMovies');
+        let preButton = this.shadowRoot.querySelector('.lessThanTenMovies');
+        if (content === undefined) {
+          moviesMsg.style.display = 'unset';
+          return false;
+        }
+        content.length==10 ? nextButton.style.visibility = 'visible' : nextButton.style.visibility = 'hidden';
+        this.page==1 ? preButton.style.visibility = 'hidden' : preButton.style.visibility = 'visible';
+        moviesMsg.style.display = 'none';
+        return true;
+      }
+
+      _replaceBadValues(content) {
+        content.forEach(element => {
+          if (element.Poster == "N/A" || element.Poster.statusCode === '404') {
+            element.Poster = "./images/noImage.jpg";
+          }
+        });
+        return content;
+      }
+
+      _changePage(event){
+        let classEl = event.currentTarget.classList[0];
+        this.page = classEl == "lessThanTenMovies" ? this.page-1 : this.page+1;
+        this._ajaxCall();
+      }
+
+      _changeContent(){
+        let movie = {"type":"movie","name":"Películas"};
+        let serie = {"type":"series","name":"Series"};
+        let contentKind = this.kind.type == "series" ? movie : serie;
+        this.kind = contentKind;
+        this.typeNotSelected = this.kind.name == "Series" ? "Películas" : "Series"; 
+      }
+
+      _manageFavs(movie){
+        let isFav = this.favMovies.find(film => film.imdbID == movie.imdbID) ? true : false;
+        isFav ? this.favMovies = this.favMovies.filter(film => film.imdbID !== movie.imdbID) : this.push('favMovies',movie);
+        localStorage.setItem('favFilms', JSON.stringify(this.favMovies));
+      }
+
+      _showFavs(){
+        this.moviesFound = [... this.favMovies];
+      }
+
+      _inicializeFavs(){
+        let films = JSON.parse(localStorage.getItem('favFilms'));
+        this.favMovies = films == null ? new Array() : films;
+      }
+
+    }
+
+    window.customElements.define(MoviesSearch.is, MoviesSearch);
+  </script>
+</dom-module>
